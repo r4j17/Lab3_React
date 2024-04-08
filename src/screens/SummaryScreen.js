@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
+import { useFocusEffect } from "@react-navigation/native";
 import SummaryLabel from "../components/SummaryLabel";
 
 export default function SummaryScreen() {
@@ -17,9 +18,25 @@ export default function SummaryScreen() {
         console.error("Error fetching transaction data:", error);
       }
     };
-
     fetchTransactionData();
+    return () => {};
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchTransactionData = async () => {
+        try {
+          const querySnapshot = await getDocs(collection(db, "transcationList"));
+          const transactions = querySnapshot.docs.map(doc => doc.data());
+          setTransactionData(transactions);
+        } catch (error) {
+          console.error("Error fetching transaction data:", error);
+        }
+      };
+
+      fetchTransactionData();
+    }, [])
+  );
 
   const totalNumberOfTransactions = transactionData.length;
 
